@@ -7,7 +7,7 @@ var express = require('express');
 var routes = function(Book){
     var bookRouter = express.Router();
 
-    bookRouter.route('/Books')
+    bookRouter.route('/')
         .post(function(req,res){
             var book = new Book(req.body);
             book.save();
@@ -45,7 +45,7 @@ var routes = function(Book){
         });
     });
 
-    bookRouter.route('/Books/:bookId')
+    bookRouter.route('/:bookId')
         .get(function(req,res){
             res.json(req.book);
         })
@@ -54,8 +54,33 @@ var routes = function(Book){
             req.book.author = req.body.author;
             req.book.genre = req.body.genre;
             req.book.read = req.body.read;
-            req.book.save();
+
+            req.book.save(function(err){
+                if(err){
+                    res.status(500).send(err);
+                }
+                else{
+                    res.json(req.book);
+                }
+            });
+
             res.json(req.book);
+        })
+        .patch(function(req,res){
+            if(req.body._id){
+                delete req.body._id;
+            }
+            for(var p in req.body){
+               req.book[p] = req.body[p];
+            }
+            req.book.save(function(err){
+                if(err){
+                    res.status(500).send(err);
+                }
+                else{
+                    res.json(req.book);
+                }
+            });
         });
     return bookRouter;
 };
